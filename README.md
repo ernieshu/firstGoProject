@@ -15,13 +15,17 @@ This project provides a simple command-line interface for validating email addre
 
 ## Building
 
-To build the project, run:
+To build the project for all platforms, run:
 
 ```bash
 ./build.sh
 ```
 
-This will create a binary at `bin/email-validator`.
+This will create platform-specific binaries in the `bin/` directory:
+- `email-validator-macos-amd64` - macOS (Intel)
+- `email-validator-macos-arm64` - macOS (Apple Silicon)
+- `email-validator-linux-amd64` - Linux
+- `email-validator-windows-amd64.exe` - Windows
 
 ## Testing
 
