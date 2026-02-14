@@ -6,6 +6,9 @@
 # - macOS (Apple Silicon - arm64)
 # - Linux (amd64)
 # - Windows (amd64)
+#
+# Pre-build: Runs unit tests and verifies they pass
+# Post-build: Verifies the built CLI with test cases
 
 set -e
 
@@ -17,6 +20,25 @@ declare -a TARGETS=(
     "windows:amd64:email-validator-windows-amd64.exe"
 )
 
+# ============================================================================
+# STEP 1: Run unit tests
+# ============================================================================
+echo "🧪 Running unit tests..."
+echo ""
+
+if ! go test -v; then
+    echo ""
+    echo "❌ Unit tests failed! Build aborted."
+    exit 1
+fi
+
+echo ""
+echo "✅ All unit tests passed!"
+echo ""
+
+# ============================================================================
+# STEP 2: Build binaries
+# ============================================================================
 echo "🔨 Building email-validator for multiple platforms..."
 echo ""
 
@@ -40,3 +62,58 @@ echo "✨ Build complete! All binaries created in ./bin/"
 echo ""
 echo "Available binaries:"
 ls -lh bin/ | grep -v "^total" | awk '{print "  - " $9 " (" $5 ")"}'
+
+# ============================================================================
+# STEP 3: Verify built CLI
+# ============================================================================
+echo ""
+echo "🔍 Verifying built CLI (macOS)..."
+echo ""
+
+# Detect macOS architecture
+ARCH=$(uname -m)
+if [[ "$ARCH" == "arm64" ]]; then
+    MACOS_BINARY="./bin/email-validator-macos-arm64"
+else
+    MACOS_BINARY="./bin/email-validator-macos-amd64"
+fi
+
+# Test cases for verification
+declare -a VALID_EMAILS=(
+    "user@example.com"
+    "john.doe@company.org"
+    "test+tag@domain.co.uk"
+)
+
+declare -a INVALID_EMAILS=(
+    "invalid-email"
+    "@nodomain.com"
+    "user@"
+)
+
+# Test valid emails
+echo "Testing valid emails:"
+for email in "${VALID_EMAILS[@]}"; do
+    if $MACOS_BINARY "$email" > /dev/null 2>&1; then
+        echo "  ✅ $email"
+    else
+        echo "  ❌ Failed to validate: $email"
+        exit 1
+    fi
+done
+
+echo ""
+echo "Testing invalid emails:"
+for email in "${INVALID_EMAILS[@]}"; do
+    if ! $MACOS_BINARY "$email" > /dev/null 2>&1; then
+        echo "  ✅ Correctly rejected: $email"
+    else
+        echo "  ❌ Failed to reject: $email"
+        exit 1
+    fi
+done
+
+echo ""
+echo "🎉 CLI verification passed!"
+echo ""
+echo "Build and verification successful!"
