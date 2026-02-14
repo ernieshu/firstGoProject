@@ -12,6 +12,35 @@
 
 set -e
 
+# ============================================================================
+# DEPENDENCY CHECK: Verify Go is installed
+# ============================================================================
+if ! command -v go &> /dev/null; then
+    echo "⚠️  Go is not installed on this system."
+    echo ""
+    
+    if ! command -v brew &> /dev/null; then
+        echo "❌ Homebrew is also not installed."
+        echo "Please install Go from: https://golang.org/dl"
+        echo "Or install Homebrew first: https://brew.sh"
+        exit 1
+    fi
+    
+    echo "📦 Installing Go via Homebrew..."
+    brew install go
+    
+    if command -v go &> /dev/null; then
+        echo "✅ Go installed successfully!"
+        echo ""
+    else
+        echo "❌ Failed to install Go via Homebrew"
+        exit 1
+    fi
+fi
+
+echo "✅ Go is installed ($(go version))"
+echo ""
+
 # Define build targets
 declare -a TARGETS=(
     "darwin:amd64:email-validator-macos-amd64"
