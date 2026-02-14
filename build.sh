@@ -20,7 +20,10 @@ declare -a TARGETS=(
 echo "🔨 Building email-validator for multiple platforms..."
 echo ""
 
-# Create bin directory if it doesn't exist
+# Clean previous builds
+rm -rf bin
+
+# Create bin directory
 mkdir -p bin
 
 # Build for each target
